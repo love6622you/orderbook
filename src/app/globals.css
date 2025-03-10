@@ -1,2 +1,9 @@
-@import "tailwind-preset-mantine";
-@import "@mantine/carousel/styles.css";
+html,
+body {
+  height: 100dvh;
+}
+
+body {
+  display: grid;
+  place-content: center;
+}
