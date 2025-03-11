@@ -32,7 +32,6 @@ interface OrderbookState {
   clearOrdersState: () => void;
 }
 
-// 保持原有的工具函数不变
 const removePriceLevel = (price: number, levels: number[][]): number[][] =>
   levels.filter((level) => level[0] !== price);
 

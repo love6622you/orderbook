@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React from "react";
+import { memo } from "react";
 import styled from "styled-components";
 
 interface QuoteRowProps {
@@ -71,4 +71,4 @@ const QuoteRow = ({ price, size, total, percent, side }: QuoteRowProps) => {
   );
 };
 
-export default QuoteRow;
+export default memo(QuoteRow);

@@ -73,26 +73,44 @@ const OrderBook = () => {
 
   return (
     <Section_Container>
-      <Div_TitleRow>Order Book</Div_TitleRow>
-      <Div_QuoteTitleRow>
-        <span className="price">Price (USD)</span>
-        <span>Size</span>
-        <span>Total</span>
-      </Div_QuoteTitleRow>
+      {bids.length && asks.length && (
+        <>
+          <Div_TitleRow>Order Book</Div_TitleRow>
+          <Div_QuoteTitleRow>
+            <span className="price">Price (USD)</span>
+            <span>Size</span>
+            <span>Total</span>
+          </Div_QuoteTitleRow>
 
-      <article>
-        {asksQuoteList.map(([price, size, total, percent], index) => (
-          <QuoteRow key={index} side="asks" price={price} size={size} total={total || 0} percent={percent} />
-        ))}
-      </article>
+          <article>
+            {asksQuoteList.map(([price, size, total, percent]) => (
+              <QuoteRow
+                key={`ask-${price}`}
+                side="asks"
+                price={price}
+                size={size}
+                total={total || 0}
+                percent={percent}
+              />
+            ))}
+          </article>
 
-      <LastPrice price={lastPrice} side={lastPriceSide} />
+          <LastPrice price={lastPrice} side={lastPriceSide} />
 
-      <article>
-        {bidsQuoteList.map(([price, size, total, percent], index) => (
-          <QuoteRow key={index} side="bids" price={price} size={size} total={total || 0} percent={percent} />
-        ))}
-      </article>
+          <article>
+            {bidsQuoteList.map(([price, size, total, percent]) => (
+              <QuoteRow
+                key={`bid-${price}`}
+                side="bids"
+                price={price}
+                size={size}
+                total={total || 0}
+                percent={percent}
+              />
+            ))}
+          </article>
+        </>
+      )}
     </Section_Container>
   );
 };
