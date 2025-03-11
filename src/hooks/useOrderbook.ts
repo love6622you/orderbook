@@ -28,13 +28,21 @@ const useOrderbook = () => {
       switch (data.type) {
         case "snapshot":
           seqNumRef.current = data.seqNum;
-          store.handleSnapshot(data);
+          store.handleAddSnapshotData(data);
           break;
 
         case "delta":
           if (data.prevSeqNum !== seqNumRef.current) {
             reSubscribe();
             return;
+          }
+
+          if (data?.asks?.length >= 0) {
+            currentAsks.current = [...currentAsks.current, ...data.asks];
+
+            store.addAsks(handleQuotes(currentAsks.current));
+            currentAsks.current = [];
+            currentAsks.current.length = 0;
           }
 
           if (data?.bids?.length > 0) {
@@ -44,13 +52,7 @@ const useOrderbook = () => {
             currentBids.current = [];
             currentBids.current.length = 0;
           }
-          if (data?.asks?.length >= 0) {
-            currentAsks.current = [...currentAsks.current, ...data.asks];
 
-            store.addAsks(handleQuotes(currentAsks.current));
-            currentAsks.current = [];
-            currentAsks.current.length = 0;
-          }
           break;
 
         default:

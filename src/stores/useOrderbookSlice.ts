@@ -2,10 +2,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import { groupByTicketSize } from "@/utils";
-
-export const ORDERBOOK_LEVELS = 25;
-
 // export type Order = [
 //   price: number, // 價格
 //   size: number, // 數量
@@ -28,12 +24,11 @@ interface OrderbookState {
   bids: number[][];
   rawAsks: number[][];
   asks: number[][];
-  groupingSize: number;
 
   // Actions
   addBids: (payload: number[][]) => void;
   addAsks: (payload: number[][]) => void;
-  handleSnapshot: (payload: OrderBookSnapshot) => void;
+  handleAddSnapshotData: (payload: OrderBookSnapshot) => void;
   clearOrdersState: () => void;
 }
 
@@ -60,13 +55,13 @@ const applyDeltas = (currentLevels: number[][], orders: number[][]): number[][] 
     const deltaLevelPrice = deltaLevel[0];
     const deltaLevelSize = deltaLevel[1];
 
-    if (deltaLevelSize === 0 && updatedLevels.length > ORDERBOOK_LEVELS) {
+    if (deltaLevelSize === 0) {
       updatedLevels = removePriceLevel(deltaLevelPrice, updatedLevels);
     } else {
       if (levelExists(deltaLevelPrice, currentLevels)) {
         updatedLevels = updatePriceLevel(deltaLevel, updatedLevels);
       } else {
-        if (updatedLevels.length < ORDERBOOK_LEVELS) {
+        if (updatedLevels.length) {
           updatedLevels = [...updatedLevels, deltaLevel];
         }
       }
@@ -118,17 +113,13 @@ export const useOrderbookStore = create<OrderbookState>()(
     bids: [],
     rawAsks: [],
     asks: [],
-    groupingSize: 0.1,
 
     // Actions
     addBids: (payload) => {
       const currentState = get();
-      const currentTicketSize = currentState.groupingSize;
+      const rawBids = currentState.rawBids;
 
-      const groupedCurrentBids = groupByTicketSize(payload, currentTicketSize);
-      const currentRawBids = groupByTicketSize(currentState.rawBids, currentTicketSize);
-
-      const updatedBids = addTotalSums(applyDeltas(currentRawBids, groupedCurrentBids));
+      const updatedBids = addTotalSums(applyDeltas(rawBids, payload));
 
       const maxTotalBids = getMaxTotalSum(updatedBids);
 
@@ -140,12 +131,9 @@ export const useOrderbookStore = create<OrderbookState>()(
 
     addAsks: (payload) => {
       const currentState = get();
-      const currentTicketSize = currentState.groupingSize;
+      const rawAsks = currentState.rawAsks;
 
-      const groupedCurrentAsks = groupByTicketSize(payload, currentTicketSize);
-      const currentRawAsks = groupByTicketSize(currentState.rawAsks, currentTicketSize);
-
-      const updatedAsks = addTotalSums(applyDeltas(currentRawAsks, groupedCurrentAsks));
+      const updatedAsks = addTotalSums(applyDeltas(rawAsks, payload));
 
       const maxTotalAsks = getMaxTotalSum(updatedAsks);
 
@@ -155,7 +143,7 @@ export const useOrderbookStore = create<OrderbookState>()(
       });
     },
 
-    handleSnapshot: (payload: OrderBookSnapshot) => {
+    handleAddSnapshotData: (payload: OrderBookSnapshot) => {
       const asks = handleQuotes(payload.asks);
       const bids = handleQuotes(payload.bids);
 
@@ -177,10 +165,3 @@ export const useOrderbookStore = create<OrderbookState>()(
     },
   })),
 );
-
-// Selectors 可以直接在组件中使用，例如：
-// const bids = useOrderbookStore(state => state.bids);
-// 或导出为独立 hook：
-export const useBids = () => useOrderbookStore((state) => state.bids);
-export const useAsks = () => useOrderbookStore((state) => state.asks);
-export const useGrouping = () => useOrderbookStore((state) => state.groupingSize);
