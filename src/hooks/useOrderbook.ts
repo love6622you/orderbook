@@ -3,7 +3,7 @@ import useWebSocket from "react-use-websocket";
 
 import { handleQuotes, useOrderbookStore } from "@/stores/useOrderbookSlice";
 
-const WSS_URL_ORDERBOOK = "wss://ws.btse.com/ws/oss/futures";
+const WSS_URL = "wss://ws.btse.com/ws/oss/futures";
 const TOPIC = "update:BTCPFC_0";
 
 const useOrderbook = () => {
@@ -17,7 +17,7 @@ const useOrderbook = () => {
   const bids = store.bids;
   const asks = store.asks;
 
-  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_URL_ORDERBOOK, {
+  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_URL, {
     onOpen: () => console.log("[Orderbook] WebSocket connection opened."),
     onClose: () => console.log("[Orderbook] WebSocket connection closed."),
     onMessage: (evt: WebSocketEventMap["message"]) => {

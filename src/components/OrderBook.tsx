@@ -4,7 +4,6 @@ import styled from "styled-components";
 import useLastPrice from "@/hooks/useLastPrice";
 import useOrderbook from "@/hooks/useOrderbook";
 import { addPercent, addTotalSums, useOrderbookStore } from "@/stores/useOrderbookSlice";
-import { printContent } from "@/utils/createElement";
 
 import LastPrice from "./LastPrice";
 import QuoteRow from "./QuoteRow";
@@ -46,7 +45,7 @@ const OrderBook = () => {
   const asks = store.asks;
 
   // 執行兩者 websocket 的 hook
-  // useLastPrice();
+  const { lastPrice, prevLastPrice } = useLastPrice();
   useOrderbook();
 
   // 要渲染至 OrderBook 上的資料列表
@@ -64,6 +63,14 @@ const OrderBook = () => {
     return addPercent(list, maxTotalSum);
   }, [bids]);
 
+  const lastPriceSide = useMemo(() => {
+    if (!lastPrice || !prevLastPrice || lastPrice === prevLastPrice) return "noChange";
+    if (lastPrice > prevLastPrice) return "up";
+    if (lastPrice < prevLastPrice) return "down";
+
+    return "noChange";
+  }, [lastPrice, prevLastPrice]);
+
   return (
     <Section_Container>
       <Div_TitleRow>Order Book</Div_TitleRow>
@@ -79,15 +86,13 @@ const OrderBook = () => {
         ))}
       </article>
 
-      <LastPrice price="21,657.5" side="Buy" />
+      <LastPrice price={lastPrice} side={lastPriceSide} />
 
       <article>
         {bidsQuoteList.map(([price, size, total, percent], index) => (
           <QuoteRow key={index} side="bids" price={price} size={size} total={total || 0} percent={percent} />
         ))}
       </article>
-
-      {/* {printContent(asksQuoteList)} */}
     </Section_Container>
   );
 };
